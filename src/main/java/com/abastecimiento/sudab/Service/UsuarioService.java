@@ -64,7 +64,7 @@ public class UsuarioService implements IUsuarioService{
     }
 
 
-
+    @Override
     public void registrar(RegisterRequestDTO request) {
     // 1. Convertimos el DTO de persona a Entidad y guardamos
     Persona persona = request.getPersona().toEntity();

@@ -5,17 +5,26 @@ import java.time.LocalDateTime;
 
 import com.abastecimiento.sudab.Model.Persona;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class PersonaDTO {
+
     private String apellidoPaterno;
     private String apellidoMaterno;
     private String nombres;
-    private String sexo; // Cambiado a String para recibir "M" o "F"
+    private String sexo;
     private LocalDate fechaNacimiento;
     private String tipoDocumento;
-    private String numDocumento; // Cambiado para coincidir con el JSON
+    private String numDocumento;
     private String direccion;
     private String telefono;
-
 
     public Persona toEntity() {
         return Persona.builder()
@@ -28,9 +37,7 @@ public class PersonaDTO {
                 .sexo(this.sexo)
                 .tipoDocumento(this.tipoDocumento)
                 .fechaNacimiento(this.fechaNacimiento)
-                .createdAt(LocalDateTime.now()) // Datos de auditoría
+                .createdAt(LocalDateTime.now())
                 .build();
     }
-    
-
 }
