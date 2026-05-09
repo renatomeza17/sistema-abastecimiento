@@ -73,14 +73,26 @@ public class AuthService {
 
     public LoginResponseDTO login(LoginRequestDTO request) {
 
-        // 1. Autenticar credenciales (lanza excepción si falla)
+        String id = request.getIdentificador();
+
+        if (id == null || id.isEmpty()) {
+        throw new RuntimeException("El identificador es obligatorio.");
+        }
+
+        // 2. Buscar al usuario en la BD por cualquiera de los dos campos
+    // Intentamos por username, si no está, intentamos por email.
+        Usuario usuario = usuarioRepository.findByUsername(id)
+                .or(() -> usuarioRepository.findByEmail(id))
+                .orElseThrow(() -> new RuntimeException("Credenciales inválidas o usuario no encontrado."));
+
+        // 3. Autenticar usando el USERNAME REAL que sacamos de la base de datos
+        // Esto es clave porque AuthenticationManager necesita el username exacto
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(usuario.getUsername(), request.getPassword())
         );
 
-        // 2. Cargar usuario de la BD
-        Usuario usuario = usuarioRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
+
+
 
         // 3. Generar token JWT
         String token = jwtUtil.generateToken(usuario.getUsername());

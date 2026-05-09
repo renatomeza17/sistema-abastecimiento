@@ -12,4 +12,5 @@ import com.abastecimiento.sudab.Model.Usuario;
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     // Para el Login Institucional (HU01)
     Optional<Usuario> findByUsername(String username);
+    Optional<Usuario> findByEmail(String email);
 }
