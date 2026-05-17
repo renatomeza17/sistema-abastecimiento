@@ -15,6 +15,7 @@ import com.abastecimiento.sudab.Service.AuthService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
+// El endpoint base es /api/auth, así que login será /api/auth/login y register será /api/auth/register
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*") 

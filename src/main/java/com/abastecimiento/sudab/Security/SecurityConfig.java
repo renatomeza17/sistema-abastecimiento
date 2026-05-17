@@ -53,6 +53,7 @@ public class SecurityConfig {
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // Permitir acceso a los endpoints de autenticación sin token
                 .requestMatchers("/api/auth/**").permitAll()   // login y register son públicos
                 .anyRequest().authenticated()                  // todo lo demás requiere token
             )
