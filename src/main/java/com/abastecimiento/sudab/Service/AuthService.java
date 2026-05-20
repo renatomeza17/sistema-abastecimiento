@@ -91,9 +91,6 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(usuario.getUsername(), request.getPassword())
         );
 
-
-
-
         // 3. Generar token JWT
         String token = jwtUtil.generateToken(usuario.getUsername());
 
