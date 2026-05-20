@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
     private final AuthService authService;
-
+    // El controlador expone dos endpoints: /register para crear un nuevo usuario y /login para autenticarse y obtener un token JWT.
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequestDTO request) {
         String mensaje = authService.register(request);
