@@ -69,6 +69,10 @@ public class AuthService {
         return "Usuario registrado exitosamente.";
     }
 
+
+
+
+    
     // ─── LOGIN ──────────────────────────────────────────────────────────────────
 
     public LoginResponseDTO login(LoginRequestDTO request) {
