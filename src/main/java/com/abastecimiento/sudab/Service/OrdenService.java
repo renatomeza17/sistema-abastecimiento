@@ -10,10 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.abastecimiento.sudab.DTO.request.OrdenRequestDTO;
 import com.abastecimiento.sudab.DTO.response.OrdenDetalleDTO;
 import com.abastecimiento.sudab.DTO.response.OrdenResponseDTO;
-import com.abastecimiento.sudab.Model.Proforma;
-import com.abastecimiento.sudab.Model.ProformaDetalle;
 import com.abastecimiento.sudab.Model.compra.OrdenCompra;
 import com.abastecimiento.sudab.Model.compra.OrdenCompraDetalle;
+import com.abastecimiento.sudab.Model.requerimiento.Proforma;
+import com.abastecimiento.sudab.Model.requerimiento.ProformaDetalle;
 import com.abastecimiento.sudab.Repository.OrdenCompraRepository;
 import com.abastecimiento.sudab.Repository.ProformaRepository;
 

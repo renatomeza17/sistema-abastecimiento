@@ -5,10 +5,8 @@ import java.time.LocalDate;
 
 import java.util.List;
 
-
-
-import com.abastecimiento.sudab.Model.Proforma;
 import com.abastecimiento.sudab.Model.Proveedor;
+import com.abastecimiento.sudab.Model.requerimiento.Proforma;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -52,7 +50,7 @@ public class OrdenCompra {
     private String estado;
 
     
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false)
     private Double montoTotal;  
 
 

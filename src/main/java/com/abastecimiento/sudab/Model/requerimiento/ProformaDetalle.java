@@ -1,6 +1,8 @@
-package com.abastecimiento.sudab.Model;
+package com.abastecimiento.sudab.Model.requerimiento;
 
 
+
+import com.abastecimiento.sudab.Model.Producto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,7 +26,9 @@ public class ProformaDetalle {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idProformaDetalle;
 
-    @Column(name = "id_proforma",nullable = false)
+
+    @ManyToOne
+    @JoinColumn(name = "id_proforma",nullable = false)
     private Proforma proforma;
 
     @ManyToOne

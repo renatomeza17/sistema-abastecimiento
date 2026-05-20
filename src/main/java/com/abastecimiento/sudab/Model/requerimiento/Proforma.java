@@ -1,10 +1,10 @@
-package com.abastecimiento.sudab.Model;
+package com.abastecimiento.sudab.Model.requerimiento;
 
 
 import java.time.LocalDate;
 import java.util.List;
 
-import com.abastecimiento.sudab.Model.requerimiento.Requerimiento;
+import com.abastecimiento.sudab.Model.Proveedor;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

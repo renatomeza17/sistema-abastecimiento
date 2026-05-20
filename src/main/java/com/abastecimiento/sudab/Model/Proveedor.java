@@ -2,6 +2,8 @@ package com.abastecimiento.sudab.Model;
 
 import java.util.List;
 
+import com.abastecimiento.sudab.Model.requerimiento.Proforma;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

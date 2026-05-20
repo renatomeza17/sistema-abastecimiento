@@ -35,7 +35,7 @@ public class OrdenCompraDetalle {
     @Column(name="cantidad",nullable = false)
     private Integer cantidad;
 
-    @Column(name="precio_unitario",nullable = false, precision = 10, scale = 2)
+    @Column(name="precio_unitario",nullable = false)
     private Double precioUnitario;
 
 
