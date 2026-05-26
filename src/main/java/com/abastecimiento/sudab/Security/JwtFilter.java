@@ -31,6 +31,10 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
+    
+        
+        
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -39,21 +43,27 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         if (!jwtUtil.isTokenValid(token)) {
+            
             filterChain.doFilter(request, response);
             return;
         }
 
         String username = jwtUtil.extractUsername(token);
+        
+        
 
         // Solo autentica si no hay sesión activa ya
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            
             var userDetails = userDetailsService.loadUserByUsername(username);
+          
 
             var authToken = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities()
             );
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authToken);
+            
         }
 
         filterChain.doFilter(request, response);

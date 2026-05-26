@@ -10,6 +10,7 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
+    
     private static final String SECRET = "clave-super-secreta-sudab-2024-abastecimiento"; // mínimo 32 chars
     private static final long EXPIRATION_MS = 86400000L; // 24 horas
 

@@ -34,8 +34,4 @@ public class RequerimientoDetalle {
 
     @Column(nullable = false)
     private Integer cantidad;
-
-    
-    
-
 }

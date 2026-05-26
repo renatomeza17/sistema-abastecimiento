@@ -112,7 +112,7 @@ public class AuthService {
                         .build())
                 .distinct()
                 .collect(Collectors.toList());
-
+        
         // 6. Armar nombre completo
         String nombreCompleto = usuario.getPersona().getNombres()
                 + " " + usuario.getPersona().getApellidoPaterno()
