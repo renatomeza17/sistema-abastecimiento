@@ -48,23 +48,27 @@ public class SecurityConfig {
          return config.getAuthenticationManager();
      }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                // Permitir acceso a los endpoints de autenticación sin token
-                .requestMatchers("/api/auth/**").permitAll()   // login y register son públicos
-                .anyRequest().authenticated()                  // todo lo demás requiere token
-            )
-            // .authenticationProvider(authenticationProvider())
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+   @Bean
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        .csrf(csrf -> csrf.disable())
+        // 1. Permitir acceso total a estas rutas específicas
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/api/auth/**").permitAll()
+            .requestMatchers("/roles/**").permitAll() // Cambiado para que coincida con tu URL
+            .requestMatchers("/usuarios/**").permitAll()
+            .anyRequest().authenticated()
+        )
+        // 2. Configuración Stateless (importante para JWT)
+        .sessionManagement(session -> 
+            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        )
+        .authenticationProvider(authenticationProvider())
+        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+    return http.build();
+}
 
 
     @Bean
