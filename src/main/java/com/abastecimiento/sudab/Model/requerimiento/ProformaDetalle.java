@@ -19,15 +19,12 @@ import lombok.NoArgsConstructor;
 @Entity
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
 @Table(name = "proforma_detalle")
 public class ProformaDetalle {
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idProformaDetalle;
-
 
     @ManyToOne
     @JoinColumn(name = "id_proforma",nullable = false)
@@ -42,7 +39,5 @@ public class ProformaDetalle {
 
     @Column(name = "precio_unitario",nullable = false)   
     private Double precioUnitario;
-
-
 
 }
