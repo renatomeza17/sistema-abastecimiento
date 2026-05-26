@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "proforma_detalle")
 public class ProformaDetalle {
 

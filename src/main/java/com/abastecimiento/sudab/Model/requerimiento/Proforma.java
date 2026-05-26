@@ -21,7 +21,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@AllArgsConstructor
 @Data
 @NoArgsConstructor
 @Table(name = "proforma")
