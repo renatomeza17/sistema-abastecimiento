@@ -49,6 +49,8 @@ public class OrdenService {
 
         nuevaOC.setCodigo("OC-"+LocalDate.now().getYear()+"-"+ (System.currentTimeMillis() % 100000));
         nuevaOC.setFechaCreacion(LocalDate.now());
+        nuevaOC.setFechaEntrega(LocalDate.now().plusDays(30));
+        nuevaOC.setDescripcion("Orden de compra");
 
 
         nuevaOC.setEstado("PENDIENTE");
@@ -86,15 +88,107 @@ public class OrdenService {
 
         return convertirAConvertirDTO(ocGuardad);
         
+      }
+
+
+
+ 
+    public List<OrdenResponseDTO> listarOrdenService() {
+        List<OrdenCompra> ordenes= ordenCompraRepository.findAll();
+        return ordenes.stream().map(this::convertirAConvertirDTO).toList();
+    }
+
+
+    @Transactional(readOnly = true)
+    public OrdenResponseDTO consultarOrdenService(Long id) {
+        OrdenCompra orden = ordenCompraRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Orden de compra no encontrada."));
+        return convertirAConvertirDTO(orden);
+    }
+
+
+    public OrdenResponseDTO enviarOrdenService(Long id) {
+        // 1. Buscas la orden que aprobó el director administrativo
+        OrdenCompra orden = ordenCompraRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Orden no encontrada."));
+
+        // 2. Validación: Que esté aprobada para poder mandarla
+        if (!"APROBADA".equals(orden.getEstado())) {
+            throw new IllegalStateException("La orden debe estar APROBADA para enviarse.");
+        }
+
+        // 3. EL CAMBIO CLAVE: Cambias el estado a ENVIADA. 
+        // Al guardarse en la BD, automáticamente el proveedor ya la puede ver en su usuario.
+        orden.setEstado("ENVIADA");
         
-        //Obtener datos de la proforma para la orden
-        // profor
-        // List<String>
+        OrdenCompra ordenEnviada = ordenCompraRepository.save(orden);
+        return convertirAConvertirDTO(ordenEnviada);
+    }   
 
 
+
+    public String aprobarOrdenService(Long id) {
+
+        OrdenCompra orden=ordenCompraRepository.findById(id).orElseThrow(() -> new RuntimeException("Orden no encontrada."));
+
+
+        if(!"ENVIADA".equals(orden.getEstado())){
+            throw new IllegalStateException("Solo se pueden aprobar órdenes en estado ENVIADA.");
+        }
+
+        orden.setEstado("APROBADA");
+        ordenCompraRepository.save(orden);
+
+        return "Orden aprobada exitosamente.";
+        
+
+    }
+
+
+
+    public String archivarOrdenService(Long id){
+        OrdenCompra orden=ordenCompraRepository.findById(id).orElseThrow(() -> new RuntimeException("Orden no encontrada."));
+
+        if(!"APROBADA".equals(orden.getEstado())){
+            throw new IllegalStateException("Solo se pueden archivar órdenes en estado APROBADA.");
+        }
+
+
+        orden.setEstado("ARCHIVADA");
+        ordenCompraRepository.save(orden);
+
+        return "Orden archivada exitosamente.";
 
 
     }
+
+
+    
+    @Transactional
+    public String cancelarOrdenService(Long id) {
+        OrdenCompra orden = ordenCompraRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Orden de compra no encontrada."));
+
+        // Regla de negocio: No se puede cancelar si ya está archivada
+        if ("ARCHIVADA".equals(orden.getEstado())) {
+            throw new IllegalStateException("No se puede cancelar una orden que ya ha sido ARCHIVADA.");
+        }
+
+        orden.setEstado("CANCELADA");
+        
+        // Liberamos la proforma asociada para que pueda volver a cotizarse si es necesario
+        if (orden.getProforma() != null) {
+            Proforma proforma = orden.getProforma();
+            proforma.setEstado("PENDIENTE"); // O el estado inicial de tu flujo de proformas
+            proformaRepository.save(proforma);
+        }
+
+        ordenCompraRepository.save(orden);
+        return "Orden cancelada exitosamente y proforma liberada.";
+    }
+
+
+
 
 
 
@@ -107,29 +201,35 @@ public class OrdenService {
         dto.setMontoTotal(oc.getMontoTotal());
         dto.setEstado(oc.getEstado());
         
-        // Desnormalización controlada para la vista del Frontend
-        dto.setNombreProveedor(oc.getProveedor().getRazonSocial());
-        dto.setRucProveedor(oc.getProveedor().getRuc());
+        if (oc.getProveedor() != null) {
+            dto.setNombreProveedor(oc.getProveedor().getRazonSocial());
+            dto.setRucProveedor(oc.getProveedor().getRuc());
+        }
         
-        // Salto relacional de trazabilidad: OC -> Proforma -> Requerimiento
-        dto.setCodigoRequerimiento(oc.getProforma().getRequerimiento().getCodigo());
+        if (oc.getProforma() != null && oc.getProforma().getRequerimiento() != null) {
+            dto.setCodigoRequerimiento(oc.getProforma().getRequerimiento().getCodigo());
+        }
         
-        // Mapeo de la sublista de ítems (Detalles)
-        List<OrdenDetalleDTO> detallesDTO = oc.getDetalles().stream().map(detalle -> {
-            OrdenDetalleDTO dDto = new OrdenDetalleDTO();
-            dDto.setId(detalle.getId());
-            dDto.setProductoId(detalle.getProducto().getIdProducto());
-            dDto.setNombreProducto(detalle.getProducto().getNombre());
-            dDto.setCantidad(detalle.getCantidad());
-            dDto.setPrecioUnitario(detalle.getPrecioUnitario());
-            dDto.setSubtotal(detalle.getSubtotal());
-            return dDto;
-        }).toList();
+        if (oc.getDetalles() != null) {
+            List<OrdenDetalleDTO> detallesDTO = oc.getDetalles().stream().map(detalle -> {
+                OrdenDetalleDTO dDto = new OrdenDetalleDTO();
+                dDto.setId(detalle.getId());
+                if (detalle.getProducto() != null) {
+                    dDto.setProductoId(detalle.getProducto().getIdProducto());
+                    dDto.setNombreProducto(detalle.getProducto().getNombre());
+                }
+                dDto.setCantidad(detalle.getCantidad());
+                dDto.setPrecioUnitario(detalle.getPrecioUnitario());
+                
+                // Calculamos dinámicamente el subtotal en caso de que detalle.getSubtotal() no esté mapeado
+                dDto.setSubtotal(detalle.getCantidad() * detalle.getPrecioUnitario());
+                return dDto;
+            }).toList();
+            dto.setDetalles(detallesDTO);
+        }
         
-        dto.setDetalles(detallesDTO);
         return dto;
     }
-
     
 
 

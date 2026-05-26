@@ -4,8 +4,10 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+// import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,17 +36,17 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        var provider = new DaoAuthenticationProvider(passwordEncoder());
-        provider.setUserDetailsService(userDetailsService);
-        return provider;
-    }
+     @Bean
+     public DaoAuthenticationProvider authenticationProvider() {
+         var provider = new DaoAuthenticationProvider(passwordEncoder());
+         provider.setUserDetailsService(userDetailsService);
+         return provider;
+     }
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
+     @Bean
+     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+         return config.getAuthenticationManager();
+     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -57,7 +60,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()   // login y register son públicos
                 .anyRequest().authenticated()                  // todo lo demás requiere token
             )
-            .authenticationProvider(authenticationProvider())
+            // .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
