@@ -3,6 +3,7 @@ package com.abastecimiento.sudab.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -188,7 +189,12 @@ public class OrdenService {
     }
 
 
-
+    public List<OrdenResponseDTO> listarOrdenesPorProveedorService(Long idProveedor) {
+    // Suponiendo que tu entidad Orden tiene una relación con Proveedor o guarda su ID:
+    return ordenCompraRepository.findByProveedorIdProveedor(idProveedor).stream()
+            .map(this::convertirAConvertirDTO) // Usa tu método existente de conversión a DTO
+            .collect(Collectors.toList());
+    }   
 
 
 
@@ -205,10 +211,16 @@ public class OrdenService {
             dto.setNombreProveedor(oc.getProveedor().getRazonSocial());
             dto.setRucProveedor(oc.getProveedor().getRuc());
         }
+        else{
+            dto.setNombreProveedor("Proveedor no asignado");
+            dto.setRucProveedor("0000000");
+        }
         
         if (oc.getProforma() != null && oc.getProforma().getRequerimiento() != null) {
             dto.setCodigoRequerimiento(oc.getProforma().getRequerimiento().getCodigo());
         }
+
+        
         
         if (oc.getDetalles() != null) {
             List<OrdenDetalleDTO> detallesDTO = oc.getDetalles().stream().map(detalle -> {
