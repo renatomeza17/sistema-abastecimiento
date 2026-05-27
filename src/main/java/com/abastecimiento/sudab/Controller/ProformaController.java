@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/proformas")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class ProformaController {
 
@@ -44,5 +45,12 @@ public class ProformaController {
     public ResponseEntity<ProformaResponseDTO> elegir(
             @PathVariable Long idProforma) {
         return ResponseEntity.ok(proformaService.elegir(idProforma));
+    }
+
+
+    // Endpoint para que la interfaz de Órdenes jale las proformas listas para procesar
+    @GetMapping("/elegidas")
+    public ResponseEntity<List<ProformaResponseDTO>> obtenerProformasElegidas() {
+        return ResponseEntity.ok(proformaService.listarProformasElegidas());
     }
 }

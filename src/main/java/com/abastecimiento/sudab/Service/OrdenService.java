@@ -80,7 +80,7 @@ public class OrdenService {
 
         nuevaOC.setMontoTotal(monto);
         nuevaOC.setDetalles(productos);
-        nuevaOC.setEstado ("SELECCIONADO");
+        // nuevaOC.setEstado ("SELECCIONADO");
 
 
 

@@ -119,6 +119,13 @@ public class ProformaService {
         return toResponse(elegida);
     }
 
+    public List<ProformaResponseDTO> listarProformasElegidas() {
+    return proformaRepository.findByEstado("PENDIENTE")
+            .stream()
+            .map(this::toResponse)
+            .collect(Collectors.toList());
+    }
+
     // ── Mapper ─────────────────────────────────────────────────────────────────
 
     private ProformaResponseDTO toResponse(Proforma p) {

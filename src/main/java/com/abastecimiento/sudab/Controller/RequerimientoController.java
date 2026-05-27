@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/requerimientos")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class RequerimientoController {
 
     private final RequerimientoService requerimientoService;
