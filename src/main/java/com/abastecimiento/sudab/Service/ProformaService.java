@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.abastecimiento.sudab.DTO.request.ProformaRequestDTO;
+import com.abastecimiento.sudab.DTO.response.ProductoResponseDTO;
 import com.abastecimiento.sudab.DTO.response.ProformaResponseDTO;
+import com.abastecimiento.sudab.DTO.response.ProveedorResponseDTO;
 import com.abastecimiento.sudab.Model.Producto;
 import com.abastecimiento.sudab.Model.Proveedor;
 import com.abastecimiento.sudab.Model.requerimiento.Proforma;
@@ -96,6 +98,18 @@ public class ProformaService {
                 .collect(Collectors.toList());
     }
 
+
+    // ── Obtener por ID ─────────────────────────────────────────────────────────
+    @Transactional(readOnly = true)
+    public ProformaResponseDTO obtenerPorIdService(Long idProforma) {
+        // 1. Busca la proforma en Neon. Si no existe, lanza un error controlado.
+        Proforma proforma = proformaRepository.findById(idProforma)
+            .orElseThrow(() -> new RuntimeException("Proforma no encontrada con el ID: " + idProforma));
+
+        return this.toResponse(proforma);
+    }
+
+
     // ── Elegir proforma (Jefe elige la mejor) ──────────────────────────────────
 
     @Transactional
@@ -107,7 +121,7 @@ public class ProformaService {
         proformaRepository
             .findByRequerimiento_IdRequerimiento(elegida.getRequerimiento().getIdRequerimiento())
             .forEach(p -> {
-                p.setEstado(p.getIdProforma().equals(idProforma) ? "ELEGIDA" : "RECHAZADA");
+                p.setEstado(p.getIdProforma().equals(idProforma) ? "ELEGIDA" : "RECHAZADA"); //DE ESTO DEPENDE SI SE PUEDE CREAR LA ORDEN DE COMPRA
                 proformaRepository.save(p);
             });
 
@@ -129,15 +143,38 @@ public class ProformaService {
     // ── Mapper ─────────────────────────────────────────────────────────────────
 
     private ProformaResponseDTO toResponse(Proforma p) {
+
+        ProveedorResponseDTO proveedorDto = ProveedorResponseDTO.builder()
+                .idProveedor(p.getProveedor().getIdProveedor())
+                .ruc(p.getProveedor().getRuc())
+                .razonSocial(p.getProveedor().getRazonSocial())
+                .direccion(p.getProveedor().getDireccion())
+                .telefono(p.getProveedor().getTelefono())
+                .email(p.getProveedor().getEmail())
+                .contacto(p.getProveedor().getContacto())
+                .build();
+
+
         List<ProformaResponseDTO.DetalleProformaResponseDTO> detalles = p.getProductos()
-                .stream().map(d -> ProformaResponseDTO.DetalleProformaResponseDTO.builder()
-                        .idProducto(d.getProducto().getIdProducto())
-                        .nombreProducto(d.getProducto().getNombre())
-                        .unidadMedida(d.getProducto().getUnidadMedida())
-                        .cantidad(d.getCantidad())
-                        .precioUnitario(d.getPrecioUnitario())
-                        .subtotal(d.getCantidad() * d.getPrecioUnitario())
-                        .build())
+                .stream().map(d -> {
+                        ProductoResponseDTO productoDto = ProductoResponseDTO.builder()
+                            .idProducto(d.getProducto().getIdProducto())
+                            .codigo(d.getProducto().getCodigo())
+                            .nombre(d.getProducto().getNombre())
+                            .unidadMedida(d.getProducto().getUnidadMedida())
+                            .descripcion(d.getProducto().getDescripcion())
+                            // .activo(d.getProducto().isActivo()) // Descomenta si tu ProductoResponseDTO tiene el campo activo
+                            .build();
+
+                            return ProformaResponseDTO.DetalleProformaResponseDTO.builder()
+                            .idProformaDetalle(d.getIdProformaDetalle())    
+                            .cantidad(d.getCantidad())
+                            .precioUnitario(d.getPrecioUnitario())
+                            .subtotal(d.getCantidad() * d.getPrecioUnitario())
+                            .producto(productoDto) 
+                            .build();
+
+                })
                 .collect(Collectors.toList());
 
         return ProformaResponseDTO.builder()
@@ -148,8 +185,7 @@ public class ProformaService {
                 .estado(p.getEstado())
                 .idRequerimiento(p.getRequerimiento().getIdRequerimiento())
                 .codigoRequerimiento(p.getRequerimiento().getCodigo())
-                .idProveedor(p.getProveedor().getIdProveedor())
-                .razonSocialProveedor(p.getProveedor().getRazonSocial())
+                .proveedor(proveedorDto)
                 .productos(detalles)
                 .build();
     }

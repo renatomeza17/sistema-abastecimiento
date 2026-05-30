@@ -2,7 +2,7 @@ package com.abastecimiento.sudab.Model.compra;
 
 
 import java.time.LocalDate;
-
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.abastecimiento.sudab.Model.Proveedor;
@@ -69,7 +69,14 @@ public class OrdenCompra {
     private List<OrdenCompraDetalle> detalles;
 
 
+    @Column(name = "fecha_autorizacion")
+    private LocalDateTime fechaAutorizacion;
 
+    @Column(name = "firma_digital_hash", length = 500)
+    private String firmaDigitalHash; // Hash de auditoría de la firma
+
+    @Column(name = "autorizado_por")
+    private String autorizadoPor; // Username del Director
 
 
 

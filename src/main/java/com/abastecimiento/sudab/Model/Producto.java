@@ -21,6 +21,9 @@ public class Producto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idProducto;
 
+    @Column(name="codigo",nullable = false, unique = true)
+    private String codigo;
+
     @Column(unique = true, nullable = false)
     private String nombre;
 

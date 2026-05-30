@@ -26,6 +26,13 @@ public class ProformaController {
         return ResponseEntity.ok(proformaService.crear(dto));
     }
 
+    
+
+    @GetMapping("/{idProforma}")
+    public ResponseEntity<ProformaResponseDTO> obtenerPorId(@PathVariable Long idProforma) {
+        return ResponseEntity.ok(proformaService.obtenerPorIdService(idProforma));
+    }
+
     // Jefe ve todas las proformas de un requerimiento
     @GetMapping("/requerimiento/{idRequerimiento}")
     public ResponseEntity<List<ProformaResponseDTO>> porRequerimiento(
@@ -46,6 +53,9 @@ public class ProformaController {
             @PathVariable Long idProforma) {
         return ResponseEntity.ok(proformaService.elegir(idProforma));
     }
+
+
+    
 
 
     // Endpoint para que la interfaz de Órdenes jale las proformas listas para procesar

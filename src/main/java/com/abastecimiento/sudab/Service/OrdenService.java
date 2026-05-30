@@ -1,7 +1,11 @@
 package com.abastecimiento.sudab.Service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -128,23 +132,60 @@ public class OrdenService {
 
 
 
-    public String aprobarOrdenService(Long id) {
-
-        OrdenCompra orden=ordenCompraRepository.findById(id).orElseThrow(() -> new RuntimeException("Orden no encontrada."));
 
 
-        if(!"ENVIADA".equals(orden.getEstado())){
-            throw new IllegalStateException("Solo se pueden aprobar órdenes en estado ENVIADA.");
-        }
+    // public String aprobarOrdenService(Long id) {
 
-        orden.setEstado("APROBADA");
-        ordenCompraRepository.save(orden);
+    //     OrdenCompra orden=ordenCompraRepository.findById(id).orElseThrow(() -> new RuntimeException("Orden no encontrada."));
 
-        return "Orden aprobada exitosamente.";
+
+    //     if(!"ENVIADA".equals(orden.getEstado())){
+    //         throw new IllegalStateException("Solo se pueden aprobar órdenes en estado ENVIADA.");
+    //     }
+
+    //     orden.setEstado("APROBADA");
+    //     ordenCompraRepository.save(orden);
+
+    //     return "Orden aprobada exitosamente.";
         
 
-    }
+    // }
 
+
+    @Transactional
+    public OrdenResponseDTO autorizarYFirmarOrden(Long idOrden, String usernameDirector) {
+        // 1. Buscar la orden
+        OrdenCompra orden = ordenCompraRepository.findById(idOrden)
+                .orElseThrow(() -> new RuntimeException("Orden de compra no encontrada: " + idOrden));
+
+        // 2. Validar estado válido para firma
+        if (!"PENDIENTE".equals(orden.getEstado())) {
+            throw new IllegalStateException("La orden no se encuentra en estado PENDIENTE_AUTORIZACION");
+        }
+
+        // 3. Modificar datos de control de flujo
+        orden.setEstado("APROBADA");
+        orden.setAutorizadoPor(usernameDirector);
+        orden.setFechaAutorizacion(LocalDateTime.now());
+
+        // 4. Simulación Avanzada de Sello / Firma Digital Criptográfica
+        try {
+            String datosAFirmar = orden.getCodigo() + "|" + orden.getFechaAutorizacion() + "|" + usernameDirector;
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashBytes = digest.digest(datosAFirmar.getBytes(StandardCharsets.UTF_8));
+            String firmaCalculada = Base64.getEncoder().encodeToString(hashBytes);
+            
+            orden.setFirmaDigitalHash("SUDAB-SIG-" + firmaCalculada);
+        } catch (Exception e) {
+            orden.setFirmaDigitalHash("SUDAB-SIG-FALLBACK-HASH-" + orden.getIdOrden());
+        }
+
+        // 5. Guardar cambios en Neon DB
+        OrdenCompra ordenGuardada = ordenCompraRepository.save(orden);
+
+        // 6. Mapear y retornar tu DTO de respuesta habitual
+        return convertirAConvertirDTO(ordenGuardada);
+    }
 
 
     public String archivarOrdenService(Long id){
@@ -170,9 +211,9 @@ public class OrdenService {
         OrdenCompra orden = ordenCompraRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Orden de compra no encontrada."));
 
-        // Regla de negocio: No se puede cancelar si ya está archivada
-        if ("ARCHIVADA".equals(orden.getEstado())) {
-            throw new IllegalStateException("No se puede cancelar una orden que ya ha sido ARCHIVADA.");
+        // Solo se puede cancelar si no ha sido enviada al proveedor
+        if ("ENVIADA".equals(orden.getEstado()) || "ARCHIVADA".equals(orden.getEstado())) {
+            throw new IllegalStateException("No se puede cancelar una orden que ya fue despachada o archivada.");
         }
 
         orden.setEstado("CANCELADA");

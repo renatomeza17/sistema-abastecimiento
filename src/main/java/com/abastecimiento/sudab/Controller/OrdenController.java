@@ -1,6 +1,7 @@
 package com.abastecimiento.sudab.Controller;
 
 
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -63,11 +64,25 @@ public class OrdenController {
     }
 
     // 5. APROBAR ORDEN (PUT /api/v1/ordenes/{id}/aprobar)
-    @PutMapping("/{id}/aprobar")
-    public ResponseEntity<String> aprobarOrden(@PathVariable Long id) {
-        String mensaje = ordenService.aprobarOrdenService(id);
-        return ResponseEntity.ok(mensaje);
+    // @PutMapping("/{id}/aprobar")
+    // public ResponseEntity<String> aprobarOrden(@PathVariable Long id) {
+    //     String mensaje = ordenService.aprobarOrdenService(id);
+    //     return ResponseEntity.ok(mensaje);
+    // }
+
+
+    
+    @PutMapping("/aprobarOrden")
+    public ResponseEntity<OrdenResponseDTO> aprobarOrden(@RequestParam Long id, Principal principal) {
+        // El objeto Principal jala automáticamente el usuario autenticado desde el JwtFilter
+        String usernameDirector = (principal != null) ? principal.getName() : "DIRECTOR ADMINISTRATIVO";
+        
+        OrdenResponseDTO response = ordenService.autorizarYFirmarOrden(id, usernameDirector);
+        return ResponseEntity.ok(response);
     }
+
+
+
 
     // 6. ARCHIVAR ORDEN (PUT /api/v1/ordenes/{id}/archivar)
     @PutMapping("/{id}/archivar")
@@ -76,9 +91,8 @@ public class OrdenController {
         return ResponseEntity.ok(mensaje);
     }
 
-    // 7. CANCELAR ORDEN (DELETE /api/v1/ordenes/{id})
-    // Se elimina la ruta "/cancelarOrden" porque el método DELETE ya implica la cancelación/eliminación
-    @DeleteMapping("/{id}")
+    
+    @PutMapping("/{id}/cancelar")
     public ResponseEntity<String> cancelarOrden(@PathVariable Long id) {
         String mensaje = ordenService.cancelarOrdenService(id);
         return ResponseEntity.ok(mensaje);
