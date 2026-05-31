@@ -69,6 +69,28 @@ public class OrdenCompra {
     private List<OrdenCompraDetalle> detalles;
 
 
+
+    
+    //ATRIBUTOS DEL REQUEST 
+    
+    @Column(name = "lugar_entrega", length = 255)
+    private String lugarEntrega;
+
+    @Column(name = "observaciones", columnDefinition = "TEXT")
+    private String observaciones;
+
+    @Column(name = "forma_pago", length = 100)
+    private String formaPago;
+
+    @Column(name = "plazo_entrega", length = 100)
+    private String plazoEntrega;
+
+    @Column(name = "garantia", length = 100)
+    private String garantia;
+
+
+    //APROBACIÓN Y FIRMA
+
     @Column(name = "fecha_autorizacion")
     private LocalDateTime fechaAutorizacion;
 
@@ -77,6 +99,9 @@ public class OrdenCompra {
 
     @Column(name = "autorizado_por")
     private String autorizadoPor; // Username del Director
+
+
+
 
 
 

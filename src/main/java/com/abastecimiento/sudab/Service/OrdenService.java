@@ -86,7 +86,12 @@ public class OrdenService {
         nuevaOC.setDetalles(productos);
         // nuevaOC.setEstado ("SELECCIONADO");
 
-
+        nuevaOC.setFechaEntrega(LocalDate.parse(ordenrequest.getFechaEntrega())); // Si el DTO manda String, lo pasas a LocalDate
+        nuevaOC.setLugarEntrega(ordenrequest.getLugarEntrega());
+        nuevaOC.setObservaciones(ordenrequest.getObservaciones());
+        nuevaOC.setFormaPago(ordenrequest.getFormaPago());
+        nuevaOC.setPlazoEntrega(ordenrequest.getPlazoEntrega());
+        nuevaOC.setGarantia(ordenrequest.getGarantia());
 
         OrdenCompra ocGuardad=ordenCompraRepository.save(nuevaOC);
 

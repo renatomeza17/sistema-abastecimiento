@@ -57,4 +57,7 @@ public class Proforma {
     @OneToMany(mappedBy="proforma",cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProformaDetalle> productos;
 
+
+
+
 }
