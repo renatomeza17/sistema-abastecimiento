@@ -23,6 +23,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "proforma")
 public class Proforma {
 
@@ -55,5 +56,8 @@ public class Proforma {
 
     @OneToMany(mappedBy="proforma",cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProformaDetalle> productos;
+
+
+
 
 }

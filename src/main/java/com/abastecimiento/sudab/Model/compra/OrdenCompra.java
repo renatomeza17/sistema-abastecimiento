@@ -2,7 +2,7 @@ package com.abastecimiento.sudab.Model.compra;
 
 
 import java.time.LocalDate;
-
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.abastecimiento.sudab.Model.Proveedor;
@@ -67,6 +67,38 @@ public class OrdenCompra {
 
     @OneToMany(mappedBy = "ordenCompra", cascade = CascadeType.ALL)
     private List<OrdenCompraDetalle> detalles;
+
+
+
+    
+    //ATRIBUTOS DEL REQUEST 
+    
+    @Column(name = "lugar_entrega", length = 255)
+    private String lugarEntrega;
+
+    @Column(name = "observaciones", columnDefinition = "TEXT")
+    private String observaciones;
+
+    @Column(name = "forma_pago", length = 100)
+    private String formaPago;
+
+    @Column(name = "plazo_entrega", length = 100)
+    private String plazoEntrega;
+
+    @Column(name = "garantia", length = 100)
+    private String garantia;
+
+
+    //APROBACIÓN Y FIRMA
+
+    @Column(name = "fecha_autorizacion")
+    private LocalDateTime fechaAutorizacion;
+
+    @Column(name = "firma_digital_hash", length = 500)
+    private String firmaDigitalHash; // Hash de auditoría de la firma
+
+    @Column(name = "autorizado_por")
+    private String autorizadoPor; // Username del Director
 
 
 

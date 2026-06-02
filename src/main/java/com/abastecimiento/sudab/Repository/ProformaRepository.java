@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import com.abastecimiento.sudab.Model.requerimiento.Proforma;
 
+
 @Repository
 public interface ProformaRepository extends JpaRepository<Proforma, Long> {
     Optional<Proforma> findByCodigo(String codigo);
@@ -15,4 +16,5 @@ public interface ProformaRepository extends JpaRepository<Proforma, Long> {
     List<Proforma> findByRequerimiento_IdRequerimiento(Long idRequerimiento);
     // Todas las proformas de un proveedor específico
     List<Proforma> findByProveedor_IdProveedor(Long idProveedor);
+    List<Proforma> findByEstado(String string);
 }

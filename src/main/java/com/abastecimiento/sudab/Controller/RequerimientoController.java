@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/requerimientos")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class RequerimientoController {
 
     private final RequerimientoService requerimientoService;
@@ -31,12 +32,21 @@ public class RequerimientoController {
         return ResponseEntity.ok(requerimientoService.listar());
     }
 
+
+
+
+
+    
     // Listar por estado: PENDIENTE, EN_PROCESO, CERRADO
     @GetMapping("/estado/{estado}")
     public ResponseEntity<List<RequerimientoResponseDTO>> listarPorEstado(
             @PathVariable String estado) {
         return ResponseEntity.ok(requerimientoService.listarPorEstado(estado));
     }
+
+
+
+
 
     // Ver uno en detalle
     @GetMapping("/{id}")

@@ -12,4 +12,6 @@ public interface OrdenCompraRepository extends JpaRepository<OrdenCompra, Long> 
     
     Optional<OrdenCompra> findByCodigo(String codigo);
 
+    Optional<OrdenCompra> findByProveedorIdProveedor(Long idProveedor);
+
 }

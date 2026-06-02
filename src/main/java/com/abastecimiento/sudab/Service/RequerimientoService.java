@@ -66,6 +66,11 @@ public class RequerimientoService {
                 .collect(Collectors.toList());
     }
 
+
+
+
+    
+
     // ── Listar por estado ──────────────────────────────────────────────────────
 
     public List<RequerimientoResponseDTO> listarPorEstado(String estado) {
@@ -73,6 +78,12 @@ public class RequerimientoService {
                 .stream().map(this::toResponse)
                 .collect(Collectors.toList());
     }
+
+
+
+
+
+
 
     // ── Obtener por ID ─────────────────────────────────────────────────────────
 

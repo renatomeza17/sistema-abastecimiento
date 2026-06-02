@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/proformas")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class ProformaController {
 
@@ -25,12 +26,32 @@ public class ProformaController {
         return ResponseEntity.ok(proformaService.crear(dto));
     }
 
+    
+
+    @GetMapping("/{idProforma}")
+    public ResponseEntity<ProformaResponseDTO> obtenerPorId(@PathVariable Long idProforma) {
+        return ResponseEntity.ok(proformaService.obtenerPorIdService(idProforma));
+    }
+
+
+
+    
+
+
+
+
+
     // Jefe ve todas las proformas de un requerimiento
     @GetMapping("/requerimiento/{idRequerimiento}")
     public ResponseEntity<List<ProformaResponseDTO>> porRequerimiento(
             @PathVariable Long idRequerimiento) {
         return ResponseEntity.ok(proformaService.listarPorRequerimiento(idRequerimiento));
     }
+
+
+
+
+
 
     // Proveedor ve sus propias proformas
     @GetMapping("/proveedor/{idProveedor}")
@@ -44,5 +65,15 @@ public class ProformaController {
     public ResponseEntity<ProformaResponseDTO> elegir(
             @PathVariable Long idProforma) {
         return ResponseEntity.ok(proformaService.elegir(idProforma));
+    }
+
+
+    
+
+
+    // Endpoint para que la interfaz de Órdenes jale las proformas listas para procesar
+    @GetMapping("/elegidas")
+    public ResponseEntity<List<ProformaResponseDTO>> obtenerProformasElegidas() {
+        return ResponseEntity.ok(proformaService.listarProformasElegidas());
     }
 }
