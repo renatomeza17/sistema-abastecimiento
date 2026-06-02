@@ -33,12 +33,25 @@ public class ProformaController {
         return ResponseEntity.ok(proformaService.obtenerPorIdService(idProforma));
     }
 
+
+
+    
+
+
+
+
+
     // Jefe ve todas las proformas de un requerimiento
     @GetMapping("/requerimiento/{idRequerimiento}")
     public ResponseEntity<List<ProformaResponseDTO>> porRequerimiento(
             @PathVariable Long idRequerimiento) {
         return ResponseEntity.ok(proformaService.listarPorRequerimiento(idRequerimiento));
     }
+
+
+
+
+
 
     // Proveedor ve sus propias proformas
     @GetMapping("/proveedor/{idProveedor}")

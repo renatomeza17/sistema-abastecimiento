@@ -90,6 +90,13 @@ public class ProformaService {
                 .collect(Collectors.toList());
     }
 
+
+
+
+
+
+    
+
     // ── Listar por proveedor ───────────────────────────────────────────────────
 
     public List<ProformaResponseDTO> listarPorProveedor(Long idProveedor) {

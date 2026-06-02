@@ -54,7 +54,7 @@ public class OrdenService {
 
         nuevaOC.setCodigo("OC-"+LocalDate.now().getYear()+"-"+ (System.currentTimeMillis() % 100000));
         nuevaOC.setFechaCreacion(LocalDate.now());
-        nuevaOC.setFechaEntrega(LocalDate.now().plusDays(30));
+       
         nuevaOC.setDescripcion("Orden de compra");
 
 
@@ -92,6 +92,9 @@ public class OrdenService {
         nuevaOC.setFormaPago(ordenrequest.getFormaPago());
         nuevaOC.setPlazoEntrega(ordenrequest.getPlazoEntrega());
         nuevaOC.setGarantia(ordenrequest.getGarantia());
+
+
+        proforma.setEstado("SELECCIONADA");
 
         OrdenCompra ocGuardad=ordenCompraRepository.save(nuevaOC);
 
