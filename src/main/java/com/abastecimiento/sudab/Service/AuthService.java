@@ -88,7 +88,7 @@ public class AuthService {
         Usuario usuario = usuarioRepository.findByUsername(id)
                 .or(() -> usuarioRepository.findByEmail(id))
                 .orElseThrow(() -> new RuntimeException("Credenciales inválidas o usuario no encontrado."));
-
+        
         // 3. Autenticar usando el USERNAME REAL que sacamos de la base de datos
         // Esto es clave porque AuthenticationManager necesita el username exacto
         authenticationManager.authenticate(

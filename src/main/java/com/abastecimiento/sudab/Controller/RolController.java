@@ -1,11 +1,11 @@
 package com.abastecimiento.sudab.Controller;
 
-// CAMBIA ESTOS DOS IMPORTS:
-import com.abastecimiento.sudab.Model.Rol; 
-import com.abastecimiento.sudab.Service.RolService; 
+import com.abastecimiento.sudab.DTO.response.RolResponseDTO;
+import com.abastecimiento.sudab.Service.RolService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -17,7 +17,7 @@ public class RolController {
     private RolService rolService;
 
     @GetMapping
-    public List<Rol> listar() {
+    public List<RolResponseDTO> listar() {
         return rolService.listar();
     }
 }
