@@ -11,9 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 
 public class LoginRequestDTO {
-    // private String email;
-    // private String username;
-
 
     private String identificador; // puede ser email o username
     private String password;
