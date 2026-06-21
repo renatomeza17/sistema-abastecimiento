@@ -3,6 +3,8 @@ package com.abastecimiento.sudab.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.core.Authentication; // Añadido
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,32 +34,35 @@ public class ProformaService {
     private final ProductoRepository productoRepository;
 
     // ── Crear proforma ─────────────────────────────────────────────────────────
-
     @Transactional
     public ProformaResponseDTO crear(ProformaRequestDTO dto) {
 
-        // 1. Buscar requerimiento y proveedor
+        // 1. Obtener el username del usuario logueado desde Spring Security
+        String usernameAutenticado = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        // 2. Buscar el proveedor usando el username a través de la relación de tablas
+        Proveedor proveedor = proveedorRepository.findByUsuario_Username(usernameAutenticado)
+                .orElseThrow(() -> new RuntimeException("El usuario logueado '" + usernameAutenticado + "' no tiene un perfil de proveedor asignado."));
+
+        // 3. Buscar el requerimiento
         Requerimiento req = requerimientoRepository.findById(dto.getIdRequerimiento())
                 .orElseThrow(() -> new RuntimeException("Requerimiento no encontrado."));
 
-        Proveedor proveedor = proveedorRepository.findById(dto.getIdProveedor())
-                .orElseThrow(() -> new RuntimeException("Proveedor no encontrado."));
-
-        // 2. Generar código: PROF-{nombreProveedor}-{año}-{seq}
+        // 4. Generar código utilizando el proveedor obtenido de la sesión: PROF-{nombreProveedor}-{seq}
         long total = proformaRepository.count();
-        String codigoProv = proveedor.getRazonSocial().toUpperCase()
-                .replaceAll("\\s+", "-").substring(0, Math.min(8, proveedor.getRazonSocial().length()));
+        String razonSocialLimpia = proveedor.getRazonSocial().toUpperCase().replaceAll("\\s+", "-");
+        String codigoProv = razonSocialLimpia.substring(0, Math.min(8, razonSocialLimpia.length()));
         String codigo = String.format("PROF-%s-%04d", codigoProv, total + 1);
 
-        // 3. Construir Proforma
+        // 5. Construir Proforma
         Proforma proforma = new Proforma();
         proforma.setCodigo(codigo);
         proforma.setFechaRecepcion(dto.getFechaRecepcion());
         proforma.setEstado("RECIBIDA");
         proforma.setRequerimiento(req);
-        proforma.setProveedor(proveedor);
+        proforma.setProveedor(proveedor); 
 
-        // 4. Construir detalles y calcular precio total
+        // 6. Construir detalles y calcular precio total
         List<ProformaDetalle> detalles = dto.getProductos().stream().map(p -> {
             Producto producto = productoRepository.findById(p.getIdProducto())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + p.getIdProducto()));
@@ -70,7 +75,7 @@ public class ProformaService {
             return detalle;
         }).collect(Collectors.toList());
 
-        // 5. Calcular precio total sumando subtotales
+        // 7. Calcular precio total sumando subtotales
         double precioTotal = detalles.stream()
                 .mapToDouble(d -> d.getCantidad() * d.getPrecioUnitario())
                 .sum();
@@ -83,42 +88,47 @@ public class ProformaService {
     }
 
     // ── Listar por requerimiento ───────────────────────────────────────────────
-
     public List<ProformaResponseDTO> listarPorRequerimiento(Long idRequerimiento) {
         return proformaRepository.findByRequerimiento_IdRequerimiento(idRequerimiento)
                 .stream().map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
-
-
-
-
-
-    
-
     // ── Listar por proveedor ───────────────────────────────────────────────────
-
     public List<ProformaResponseDTO> listarPorProveedor(Long idProveedor) {
         return proformaRepository.findByProveedor_IdProveedor(idProveedor)
                 .stream().map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
+    // ── Listar proformas del proveedor logueado ────────────────────────────────
+    public List<ProformaResponseDTO> listarMisProformas() {
+        // 1. Obtener el usuario autenticado desde el token JWT
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String usernameLogueado = auth.getName();
+
+        // 2. Buscar al proveedor asociado a ese username en la base de datos
+        Proveedor proveedor = proveedorRepository.findByUsuario_Username(usernameLogueado)
+                .orElseThrow(() -> new RuntimeException("No se encontró un proveedor asociado a este usuario"));
+
+        // 3. Buscar las proformas de ese proveedor y convertirlas a DTO
+        List<Proforma> misProformas = proformaRepository.findByProveedor_IdProveedor(proveedor.getIdProveedor());
+        
+        return misProformas.stream()
+                .map(this::toResponse) // CORREGIDO: toResponse en lugar de toResponseDTO
+                .collect(Collectors.toList());
+    }
 
     // ── Obtener por ID ─────────────────────────────────────────────────────────
     @Transactional(readOnly = true)
     public ProformaResponseDTO obtenerPorIdService(Long idProforma) {
-        // 1. Busca la proforma en Neon. Si no existe, lanza un error controlado.
         Proforma proforma = proformaRepository.findById(idProforma)
             .orElseThrow(() -> new RuntimeException("Proforma no encontrada con el ID: " + idProforma));
 
         return this.toResponse(proforma);
     }
 
-
     // ── Elegir proforma (Jefe elige la mejor) ──────────────────────────────────
-
     @Transactional
     public ProformaResponseDTO elegir(Long idProforma) {
         Proforma elegida = proformaRepository.findById(idProforma)
@@ -128,7 +138,7 @@ public class ProformaService {
         proformaRepository
             .findByRequerimiento_IdRequerimiento(elegida.getRequerimiento().getIdRequerimiento())
             .forEach(p -> {
-                p.setEstado(p.getIdProforma().equals(idProforma) ? "ELEGIDA" : "RECHAZADA"); //DE ESTO DEPENDE SI SE PUEDE CREAR LA ORDEN DE COMPRA
+                p.setEstado(p.getIdProforma().equals(idProforma) ? "ELEGIDA" : "RECHAZADA");
                 proformaRepository.save(p);
             });
 
@@ -140,15 +150,16 @@ public class ProformaService {
         return toResponse(elegida);
     }
 
+    // ── Listar Proformas Elegidas ──────────────────────────────────────────────
     public List<ProformaResponseDTO> listarProformasElegidas() {
-    return proformaRepository.findByEstado("PENDIENTE")
-            .stream()
-            .map(this::toResponse)
-            .collect(Collectors.toList());
+        // CORREGIDO: Buscar por "ELEGIDA" (las ganadoras) en lugar de "PENDIENTE"
+        return proformaRepository.findByEstado("ELEGIDA") 
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
     // ── Mapper ─────────────────────────────────────────────────────────────────
-
     private ProformaResponseDTO toResponse(Proforma p) {
 
         ProveedorResponseDTO proveedorDto = ProveedorResponseDTO.builder()
@@ -161,7 +172,6 @@ public class ProformaService {
                 .contacto(p.getProveedor().getContacto())
                 .build();
 
-
         List<ProformaResponseDTO.DetalleProformaResponseDTO> detalles = p.getProductos()
                 .stream().map(d -> {
                         ProductoResponseDTO productoDto = ProductoResponseDTO.builder()
@@ -170,17 +180,15 @@ public class ProformaService {
                             .nombre(d.getProducto().getNombre())
                             .unidadMedida(d.getProducto().getUnidadMedida())
                             .descripcion(d.getProducto().getDescripcion())
-                            // .activo(d.getProducto().isActivo()) // Descomenta si tu ProductoResponseDTO tiene el campo activo
                             .build();
 
-                            return ProformaResponseDTO.DetalleProformaResponseDTO.builder()
+                        return ProformaResponseDTO.DetalleProformaResponseDTO.builder()
                             .idProformaDetalle(d.getIdProformaDetalle())    
                             .cantidad(d.getCantidad())
                             .precioUnitario(d.getPrecioUnitario())
                             .subtotal(d.getCantidad() * d.getPrecioUnitario())
                             .producto(productoDto) 
                             .build();
-
                 })
                 .collect(Collectors.toList());
 

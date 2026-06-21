@@ -26,20 +26,10 @@ public class ProformaController {
         return ResponseEntity.ok(proformaService.crear(dto));
     }
 
-    
-
     @GetMapping("/{idProforma}")
     public ResponseEntity<ProformaResponseDTO> obtenerPorId(@PathVariable Long idProforma) {
         return ResponseEntity.ok(proformaService.obtenerPorIdService(idProforma));
     }
-
-
-
-    
-
-
-
-
 
     // Jefe ve todas las proformas de un requerimiento
     @GetMapping("/requerimiento/{idRequerimiento}")
@@ -48,28 +38,26 @@ public class ProformaController {
         return ResponseEntity.ok(proformaService.listarPorRequerimiento(idRequerimiento));
     }
 
-
-
-
-
-
-    // Proveedor ve sus propias proformas
+    // Proveedor ve sus propias proformas (Búsqueda manual por ID si la necesitas)
     @GetMapping("/proveedor/{idProveedor}")
     public ResponseEntity<List<ProformaResponseDTO>> porProveedor(
             @PathVariable Long idProveedor) {
         return ResponseEntity.ok(proformaService.listarPorProveedor(idProveedor));
     }
 
+    // CORRECCIÓN: El proveedor obtiene sus proformas a partir de su token JWT (Sin ID en la URL)
+    @GetMapping("/mis-proformas")
+    public ResponseEntity<List<ProformaResponseDTO>> misProformas() {
+        // Llamamos a un nuevo método en el service que no requiere parámetros
+        return ResponseEntity.ok(proformaService.listarMisProformas());
+    }
+    
     // Jefe elige la mejor proforma
     @PatchMapping("/{idProforma}/elegir")
     public ResponseEntity<ProformaResponseDTO> elegir(
             @PathVariable Long idProforma) {
         return ResponseEntity.ok(proformaService.elegir(idProforma));
     }
-
-
-    
-
 
     // Endpoint para que la interfaz de Órdenes jale las proformas listas para procesar
     @GetMapping("/elegidas")
