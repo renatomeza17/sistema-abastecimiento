@@ -58,6 +58,12 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .requestMatchers("/api/auth/**").permitAll()
             .requestMatchers("/roles/**").permitAll() // Cambiado para que coincida con tu URL
             .requestMatchers("/usuarios/**").permitAll()
+
+            .requestMatchers("/api/ordenes/**").permitAll()
+            .requestMatchers("/api/proformas/**").permitAll()
+            .requestMatchers("/api/pedidos-pendientes/**").permitAll()
+            .requestMatchers("/api/requerimientos/**").permitAll()
+            
             .anyRequest().authenticated()
         )
         // 2. Configuración Stateless (importante para JWT)
