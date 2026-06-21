@@ -9,7 +9,6 @@ import lombok.Data;
 public class ProformaRequestDTO {
 
     private Long idRequerimiento;   // A qué requerimiento responde
-    private Long idProveedor;       // Quién envía la proforma
     private LocalDate fechaRecepcion;
 
     private List<DetalleProformaRequestDTO> productos;

@@ -245,7 +245,60 @@ public class OrdenService {
             .map(this::convertirAConvertirDTO) // Usa tu método existente de conversión a DTO
             .collect(Collectors.toList());
     }   
+    
+    @Transactional(readOnly = true)
+    public List<OrdenResponseDTO> listarOrdenesParaVerificacion() {
+    return ordenCompraRepository.findByEstado("ENVIADA")
+            .stream()
+            .map(this::convertirAConvertirDTO)
+            .toList();
+}
 
+    @Transactional
+        public OrdenResponseDTO recepcionarOrden(Long id) {
+        OrdenCompra orden = ordenCompraRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Orden de compra no encontrada."));
+
+    if (!"ENVIADA".equals(orden.getEstado())) {
+        throw new IllegalStateException("Solo se pueden recepcionar órdenes en estado ENVIADA.");
+    }
+
+    orden.setEstado("ARCHIVADA");
+    orden.setObservaciones(
+            (orden.getObservaciones() == null ? "" : orden.getObservaciones() + "\n")
+            + "Recepción conforme registrada."
+    );
+
+    OrdenCompra guardada = ordenCompraRepository.save(orden);
+    return convertirAConvertirDTO(guardada);
+}
+
+@Transactional
+public OrdenResponseDTO registrarPedidoPendiente(Long id, String motivo) {
+    OrdenCompra orden = ordenCompraRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Orden de compra no encontrada."));
+
+    if (!"ENVIADA".equals(orden.getEstado())) {
+        throw new IllegalStateException("Solo se puede registrar pedido pendiente para órdenes ENVIADAS.");
+    }
+
+    orden.setEstado("PEDIDO_PENDIENTE");
+    orden.setObservaciones(
+            (orden.getObservaciones() == null ? "" : orden.getObservaciones() + "\n")
+            + "Pedido pendiente: " + motivo
+    );
+
+    OrdenCompra guardada = ordenCompraRepository.save(orden);
+    return convertirAConvertirDTO(guardada);
+}
+
+@Transactional(readOnly = true)
+public List<OrdenResponseDTO> listarPedidosPendientes() {
+    return ordenCompraRepository.findByEstado("PEDIDO_PENDIENTE")
+            .stream()
+            .map(this::convertirAConvertirDTO)
+            .toList();
+}   
 
 
 

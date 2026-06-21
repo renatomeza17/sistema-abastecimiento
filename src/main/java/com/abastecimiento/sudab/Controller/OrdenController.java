@@ -103,7 +103,28 @@ public class OrdenController {
         return ordenService.listarOrdenesPorProveedorService(idProveedor);
     }
 
+    @GetMapping("/recepcion/verificar")
+    public ResponseEntity<List<OrdenResponseDTO>> listarOrdenesParaVerificacion() {
+        return ResponseEntity.ok(ordenService.listarOrdenesParaVerificacion());
+    }
 
+    @PutMapping("/{id}/recepcionar")
+    public ResponseEntity<OrdenResponseDTO> recepcionarOrden(@PathVariable Long id) {
+        return ResponseEntity.ok(ordenService.recepcionarOrden(id));
+    }
+
+    @PutMapping("/{id}/pedido-pendiente")
+    public ResponseEntity<OrdenResponseDTO> registrarPedidoPendiente(
+            @PathVariable Long id,
+            @RequestParam String motivo
+    ) {
+        return ResponseEntity.ok(ordenService.registrarPedidoPendiente(id, motivo));
+    }
+
+    @GetMapping("/recepcion/pendientes")
+    public ResponseEntity<List<OrdenResponseDTO>> listarPedidosPendientes() {
+        return ResponseEntity.ok(ordenService.listarPedidosPendientes());
+    }
 
 
 

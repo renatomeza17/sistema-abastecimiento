@@ -1,5 +1,6 @@
 package com.abastecimiento.sudab.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,4 +15,5 @@ public interface OrdenCompraRepository extends JpaRepository<OrdenCompra, Long> 
 
     Optional<OrdenCompra> findByProveedorIdProveedor(Long idProveedor);
 
+     List<OrdenCompra> findByEstado(String estado);
 }
