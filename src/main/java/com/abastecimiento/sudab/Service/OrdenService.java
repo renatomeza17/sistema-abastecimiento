@@ -31,6 +31,7 @@ public class OrdenService {
 
     private final ProformaRepository proformaRepository;
     private final OrdenCompraRepository ordenCompraRepository;
+    private final KardexService kardexService;
 
 
     @Transactional
@@ -293,6 +294,30 @@ public class OrdenService {
     }
     
 
+
+
+
+    @Transactional
+    public String procesarRecepcionConforme(Long idOrden) {
+        // 1. El almacenero da el clic al constatar que las cajas llegaron completas.
+        OrdenCompra orden = ordenCompraRepository.findById(idOrden).orElseThrow();
+        
+        // 2. Cambiamos el estado de la OC porque ya entró físicamente a las instalaciones
+        orden.setEstado("PROCESADA_ALMACEN"); 
+        ordenCompraRepository.save(orden);
+        
+        // 3. RECIÉN AQUÍ, con las cosas completas en la mesa, el sistema actualiza el stock automáticamente
+        for (OrdenCompraDetalle detalle : orden.getDetalles()) {
+            kardexService.registrarMovimiento(
+                detalle.getProducto().getIdProducto(), 
+                detalle.getCantidad(), 
+                "ENTRADA", 
+                orden.getCodigo(), 
+                "Ingreso físico verificado por Almacén"
+            );
+        }
+        return "Bienes ingresados al almacén con éxito.";
+    }
 
 
 
