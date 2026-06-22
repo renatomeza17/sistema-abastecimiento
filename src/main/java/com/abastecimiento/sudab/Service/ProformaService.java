@@ -136,11 +136,8 @@ public class ProformaService {
 
         // Rechaza todas las demás del mismo requerimiento
         proformaRepository
-            .findByRequerimiento_IdRequerimiento(elegida.getRequerimiento().getIdRequerimiento())
-            .forEach(p -> {
-                p.setEstado(p.getIdProforma().equals(idProforma) ? "ELEGIDA" : "RECHAZADA");
-                proformaRepository.save(p);
-            });
+        .findByRequerimiento_IdRequerimiento(elegida.getRequerimiento().getIdRequerimiento())
+        .forEach(p -> p.setEstado(p.getIdProforma().equals(idProforma) ? "ELEGIDA" : "RECHAZADA"));
 
         // Cambia estado del requerimiento a EN_PROCESO
         Requerimiento req = elegida.getRequerimiento();
