@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/pedidos-pendientes")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 public class PedidoPendienteController {
 
     private final PedidoPendienteService pedidoPendienteService;
