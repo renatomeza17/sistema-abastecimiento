@@ -129,7 +129,9 @@ public class KardexService {
     }
 
 
-
+    public List<Producto> obtenerProductosDisponibles() {
+        return productoRepository.findProductosSinKardex();
+    }
 
 
 

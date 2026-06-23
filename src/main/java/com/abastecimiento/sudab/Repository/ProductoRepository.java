@@ -9,7 +9,7 @@ import com.abastecimiento.sudab.Model.Producto;
 @Repository
 public interface ProductoRepository extends JpaRepository<Producto, Long> {
 
-    // Busca productos que no tienen fila asociada en el kardex (Tu query existente)
+    // Busca productos que no tienen fila asociada en el kardex 
     @Query("SELECT p FROM Producto p WHERE NOT EXISTS (SELECT k FROM Kardex k WHERE k.producto.idProducto = p.idProducto)")
     List<Producto> findProductosSinKardex();
 

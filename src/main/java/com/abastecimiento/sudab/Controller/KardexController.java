@@ -18,9 +18,7 @@ import com.abastecimiento.sudab.DTO.response.KardexMovimientoResponseDTO;
 import com.abastecimiento.sudab.DTO.response.KardexResponseDTO;
 import com.abastecimiento.sudab.Model.Producto;
 import com.abastecimiento.sudab.Model.inventario.Kardex;
-// import com.abastecimiento.sudab.Model.inventario.KardexMovimiento;
-import com.abastecimiento.sudab.Repository.KardexMovimientoRepository;
-import com.abastecimiento.sudab.Repository.ProductoRepository;
+
 import com.abastecimiento.sudab.Service.KardexService;
 
 import lombok.RequiredArgsConstructor;
@@ -32,8 +30,7 @@ import lombok.RequiredArgsConstructor;
 public class KardexController {
 
     private final KardexService kardexService;
-    private final KardexMovimientoRepository movimientoRepository;
-    private final ProductoRepository productoRepository;
+    
 
     @PostMapping("/nuevo-asiento")  
     public ResponseEntity<Kardex> crearAsiento(@RequestBody KardexRequestDTO dto) {
@@ -48,10 +45,18 @@ public class KardexController {
 
 
     //KARDEX
+    // @GetMapping("/productos-disponibles")
+    // public ResponseEntity<List<Producto>> obtenerProductosSinKardex() {
+    //     // Te servirá para llenar el combobox/select en el formulario de la HU11 en Angular
+    //     return ResponseEntity.ok(productoRepository.findProductosSinKardex());
+    // }
+
+
+
     @GetMapping("/productos-disponibles")
     public ResponseEntity<List<Producto>> obtenerProductosSinKardex() {
         // Te servirá para llenar el combobox/select en el formulario de la HU11 en Angular
-        return ResponseEntity.ok(productoRepository.findProductosSinKardex());
+        return ResponseEntity.ok(kardexService.obtenerProductosDisponibles());
     }
 
     @GetMapping
