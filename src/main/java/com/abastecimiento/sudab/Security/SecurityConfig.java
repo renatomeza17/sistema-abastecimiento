@@ -54,7 +54,18 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .csrf(csrf -> csrf.disable())
         // 1. Permitir acceso total a estas rutas específicas
-        .authorizeHttpRequests(auth -> auth
+            .authorizeHttpRequests(auth -> auth
+              // Swagger público
+            .requestMatchers(
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs",
+            "/v3/api-docs/**",
+            "/api-docs",
+            "/api-docs/**",
+            "/webjars/**"
+              ).permitAll()
+             
             .requestMatchers("/api/auth/**").permitAll()
             .requestMatchers("/roles/**").permitAll() // Cambiado para que coincida con tu URL
             .requestMatchers("/usuarios/**").permitAll()
@@ -63,6 +74,8 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .requestMatchers("/api/proformas/**").permitAll()
             .requestMatchers("/api/pedidos-pendientes/**").permitAll()
             .requestMatchers("/api/requerimientos/**").permitAll()
+            
+
             
             .anyRequest().authenticated()
         )
