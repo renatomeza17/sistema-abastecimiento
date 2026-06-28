@@ -74,6 +74,8 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .requestMatchers("/api/proformas/**").permitAll()
             .requestMatchers("/api/pedidos-pendientes/**").permitAll()
             .requestMatchers("/api/requerimientos/**").permitAll()
+            .requestMatchers("/api/kardex/**").permitAll()
+            
             
 
             
