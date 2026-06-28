@@ -142,6 +142,13 @@ public class KardexServiceTest {
         // Arrange
         when(kardexRepository.findByProductoIdProducto(5001L)).thenReturn(Optional.of(kardexMock));
 
+        // 2. Simulamos el guardado de la cabecera: Retorna el mismo objeto Kárdex actualizado
+        when(kardexRepository.save(any(Kardex.class))).thenReturn(kardexMock);
+        
+        // 3. Simulamos el guardado en el historial: Captura el movimiento de salida y lo devuelve
+        when(movimientoRepository.save(any(KardexMovimiento.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
         // Act: Retiramos 5 unidades (Stock actual es 15, así que es totalmente válido)
         kardexService.registrarMovimiento(5001L, 5, "SALIDA", "PEC-2026-045", "Despacho a Oficina");
 
@@ -150,6 +157,9 @@ public class KardexServiceTest {
         verify(kardexRepository, times(1)).save(kardexMock);
         verify(movimientoRepository, times(1)).save(any(KardexMovimiento.class));
     }
+
+
+
 
     @Test
     void cuandoSalidaExcedeStockActual_EntoncesLanzaIllegalArgumentExceptionYNoModifica() {
