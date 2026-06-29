@@ -44,7 +44,12 @@ public class PedidoPendienteService {
 
         PedidoPendiente pedido = pedidoPendienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido pendiente no encontrado"));
-
+        
+                // --- AQUÍ ESTÁ LA CORRECCIÓN ---
+        if ("RESUELTO".equals(pedido.getEstado())) {
+            throw new IllegalStateException("El pedido ya ha sido resuelto previamente.");
+        }
+        // --------------------------------
         pedido.setEstado("RESUELTO");
         pedido.setFechaResolucion(LocalDateTime.now());
 

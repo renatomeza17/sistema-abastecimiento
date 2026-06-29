@@ -27,7 +27,7 @@ public class KardexService {
 
     private final KardexRepository kardexRepository;
     private final KardexMovimientoRepository movimientoRepository;
-    private final ProductoRepository productoRepository; // Supongamos que ya existe
+    private final ProductoRepository productoRepository; 
 
     // --- LOGICA PARA HU11: CREAR NUEVO ASIENTO (PRODUCTO NUEVO) ---
     @Transactional
@@ -132,6 +132,11 @@ public class KardexService {
     public List<Producto> obtenerProductosDisponibles() {
         return productoRepository.findProductosSinKardex();
     }
+
+
+    // public List<Producto> obtenerProductos() {
+    //     return productoRepository.findAll();
+    // }
 
 
 

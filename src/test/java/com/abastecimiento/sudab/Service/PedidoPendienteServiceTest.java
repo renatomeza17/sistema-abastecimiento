@@ -1,6 +1,7 @@
 package com.abastecimiento.sudab.Service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -122,6 +123,22 @@ class PedidoPendienteServiceTest {
         assertEquals("Pedido pendiente no encontrado", exception.getMessage());
 
         verify(pedidoPendienteRepository).findById(99L);
+        verify(pedidoPendienteRepository, never()).save(any(PedidoPendiente.class));
+    }
+
+    @Test
+    void noDebeResolverPedidoSiYaEstaResuelto() {
+        // Arrange: Creamos un pedido que ya está RESUELTO
+        PedidoPendiente pedidoResuelto = new PedidoPendiente();
+        pedidoResuelto.setEstado("RESUELTO");
+        when(pedidoPendienteRepository.findById(1L)).thenReturn(Optional.of(pedidoResuelto));
+
+        // Act & Assert: El sistema debe impedir la acción
+        assertThrows(IllegalStateException.class, () -> {
+            pedidoPendienteService.resolver(1L);
+        });
+
+        // Verificamos que el save() NUNCA se ejecutó
         verify(pedidoPendienteRepository, never()).save(any(PedidoPendiente.class));
     }
 }
