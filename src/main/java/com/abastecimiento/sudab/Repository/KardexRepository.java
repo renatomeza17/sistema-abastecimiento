@@ -13,5 +13,7 @@ public interface KardexRepository extends JpaRepository<Kardex, Long>{
 
     Optional<Kardex> findByProductoIdProducto(Long idProducto);
 
+    boolean existsByProductoIdProducto(Long idProducto);
+
 
 }
