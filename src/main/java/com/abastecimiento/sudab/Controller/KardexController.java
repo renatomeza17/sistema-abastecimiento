@@ -82,7 +82,11 @@ public class KardexController {
         return ResponseEntity.ok("✅ Movimiento registrado y stock actualizado con éxito en Neon DB.");
     }
 
-
+    @GetMapping("/verificar-faltantes/{idOrden}")
+    public ResponseEntity<List<Producto>> obtenerProductosFaltantesPorOrden(@PathVariable Long idOrden) {
+        List<Producto> faltantes = kardexService.verificarProductosFaltantesDeOrden(idOrden);
+        return ResponseEntity.ok(faltantes);
+    }
 
 
 
