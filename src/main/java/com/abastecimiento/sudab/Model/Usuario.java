@@ -37,7 +37,7 @@ public class Usuario {
     @Column(nullable = false)
     private String password; // Se guarda encriptado con BCrypt
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
 
