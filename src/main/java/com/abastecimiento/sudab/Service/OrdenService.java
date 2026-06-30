@@ -248,7 +248,7 @@ public class OrdenService {
     
     @Transactional(readOnly = true)
     public List<OrdenResponseDTO> listarOrdenesParaVerificacion() {
-    return ordenCompraRepository.findByEstado("ENVIADA")
+    return ordenCompraRepository.findByEstadoIn(List.of("APROBADA", "ENVIADA"))
             .stream()
             .map(this::convertirAConvertirDTO)
             .toList();
@@ -259,11 +259,12 @@ public class OrdenService {
         OrdenCompra orden = ordenCompraRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Orden de compra no encontrada."));
 
-    if (!"ENVIADA".equals(orden.getEstado())) {
-        throw new IllegalStateException("Solo se pueden recepcionar órdenes en estado ENVIADA.");
+    String estado = orden.getEstado();
+    if (!"ENVIADA".equals(estado) && !"APROBADA".equals(estado)) {
+        throw new IllegalStateException("Solo se pueden recepcionar órdenes en estado APROBADA o ENVIADA.");
     }
 
-    orden.setEstado("ARCHIVADA");
+    orden.setEstado("RECIBIDA");
     orden.setObservaciones(
             (orden.getObservaciones() == null ? "" : orden.getObservaciones() + "\n")
             + "Recepción conforme registrada."
@@ -278,8 +279,9 @@ public OrdenResponseDTO registrarPedidoPendiente(Long id, String motivo) {
     OrdenCompra orden = ordenCompraRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Orden de compra no encontrada."));
 
-    if (!"ENVIADA".equals(orden.getEstado())) {
-        throw new IllegalStateException("Solo se puede registrar pedido pendiente para órdenes ENVIADAS.");
+    String estado = orden.getEstado();
+    if (!"ENVIADA".equals(estado) && !"APROBADA".equals(estado) && !"RECIBIDA".equals(estado)) {
+        throw new IllegalStateException("Solo se puede registrar pedido pendiente para órdenes ENVIADAS, APROBADAS o RECIBIDAS.");
     }
 
     orden.setEstado("PEDIDO_PENDIENTE");

@@ -53,6 +53,17 @@ public class PedidoPendienteService {
         pedido.setEstado("RESUELTO");
         pedido.setFechaResolucion(LocalDateTime.now());
 
+        // La orden vuelve a ENVIADA para una segunda verificación
+        OrdenCompra orden = pedido.getOrdenCompra();
+        if (orden != null) {
+            orden.setEstado("ENVIADA");
+            orden.setObservaciones(
+                (orden.getObservaciones() == null ? "" : orden.getObservaciones() + "\n")
+                + "Pedido pendiente resuelto, pendiente de segunda verificación."
+            );
+            ordenCompraRepository.save(orden);
+        }
+
         return pedidoPendienteRepository.save(pedido);
     }
 }
