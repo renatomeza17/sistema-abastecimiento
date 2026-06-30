@@ -30,6 +30,10 @@ public class RolService {
                     .map(rm -> ModuloDTO.builder()
                             .descripcion(rm.getModulo().getDescripcion())
                             .url(rm.getModulo().getUrl())
+                            .puedeCrear(rm.getPuedeCrear())
+                            .puedeLeer(rm.getPuedeLeer())
+                            .puedeActualizar(rm.getPuedeActualizar())
+                            .puedeEliminar(rm.getPuedeEliminar())
                             .build())
                     .distinct()
                     .collect(Collectors.toList());

@@ -51,11 +51,10 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
 
-        if (!jwtUtil.isTokenValid(token)) {
-            
-            filterChain.doFilter(request, response);
-            return;
-        }
+        if (!jwtUtil.isTokenValid(token) || !jwtUtil.isAccessToken(token)) {
+        filterChain.doFilter(request, response);
+        return;
+}
 
         String username = jwtUtil.extractUsername(token);
         

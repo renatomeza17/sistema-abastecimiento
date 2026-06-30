@@ -1,5 +1,7 @@
 package com.abastecimiento.sudab.Controller;
 
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,28 +11,33 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.abastecimiento.sudab.DTO.request.LoginRequestDTO;
 import com.abastecimiento.sudab.DTO.request.RegisterRequestDTO;
+import com.abastecimiento.sudab.DTO.response.AuthResponseDTO;
 import com.abastecimiento.sudab.DTO.response.LoginResponseDTO;
 import com.abastecimiento.sudab.Service.AuthService;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
-// El endpoint base es /api/auth, así que login será /api/auth/login y register será /api/auth/register
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") 
+@CrossOrigin(origins = "*")
 public class AuthController {
 
     private final AuthService authService;
-    // El controlador expone dos endpoints: /register para crear un nuevo usuario y /login para autenticarse y obtener un token JWT.
+
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequestDTO request) {
-        String mensaje = authService.register(request);
-        return ResponseEntity.ok(mensaje);
+    public ResponseEntity<AuthResponseDTO> register(@RequestBody RegisterRequestDTO request) {
+        return ResponseEntity.ok(authService.register(request));
     }
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<AuthResponseDTO> refreshToken(@RequestBody Map<String, String> body) {
+        String refreshToken = body.get("refreshToken");
+        return ResponseEntity.ok(authService.refreshToken(refreshToken));
     }
 }
