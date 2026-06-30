@@ -12,4 +12,8 @@ import lombok.NoArgsConstructor;
 public class ModuloDTO {
     private String descripcion;
     private String url;
+    private String puedeCrear;
+    private String puedeLeer;
+    private String puedeActualizar;
+    private String puedeEliminar;
 }
