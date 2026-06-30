@@ -3,7 +3,9 @@ package com.abastecimiento.sudab.Service;
 import com.abastecimiento.sudab.DTO.request.LoginRequestDTO;
 import com.abastecimiento.sudab.DTO.request.ModuloDTO;
 import com.abastecimiento.sudab.DTO.request.RegisterRequestDTO;
+import com.abastecimiento.sudab.DTO.response.AuthResponseDTO;
 import com.abastecimiento.sudab.DTO.response.LoginResponseDTO;
+import com.abastecimiento.sudab.Model.Modulo;
 import com.abastecimiento.sudab.Model.Persona;
 import com.abastecimiento.sudab.Model.Rol;
 import com.abastecimiento.sudab.Model.Usuario;
@@ -11,7 +13,9 @@ import com.abastecimiento.sudab.Repository.*;
 import com.abastecimiento.sudab.Security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,88 +36,88 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
 
-    // ─── REGISTER ──────────────────────────────────────────────────────────────
-
     @Transactional
-    public String register(RegisterRequestDTO request) {
-
-        // 1. Verificar que el username no exista
+    public AuthResponseDTO register(RegisterRequestDTO request) {
         if (usuarioRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new RuntimeException("El username ya está en uso: " + request.getUsername());
+            throw new IllegalArgumentException("El username ya está en uso: " + request.getUsername());
         }
 
-        // 2. Verificar que el DNI no esté registrado
-        if (personaRepository.findByNumDocumento(request.getPersona().toEntity().getNumDocumento()).isPresent()) {
-            throw new RuntimeException("El documento ya está registrado.");
+        if (request.getEmail() != null && usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("El email ya está registrado.");
         }
 
-        // 3. Guardar Persona
+        if (request.getPersona() != null
+                && personaRepository.findByNumDocumento(request.getPersona().getNumDocumento()).isPresent()) {
+            throw new IllegalArgumentException("El documento ya está registrado.");
+        }
+
         Persona persona = request.getPersona().toEntity();
         personaRepository.save(persona);
 
-        // 4. Construir y guardar Usuario
         Usuario usuario = request.toEntity(passwordEncoder, persona);
 
-        // 5. Asignar roles
         if (request.getIdsRoles() != null && !request.getIdsRoles().isEmpty()) {
             var roles = new HashSet<Rol>();
             for (Long idRol : request.getIdsRoles()) {
                 Rol rol = rolRepository.findById(idRol)
-                        .orElseThrow(() -> new RuntimeException("Rol no encontrado: " + idRol));
+                        .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado: " + idRol));
                 roles.add(rol);
             }
             usuario.setRoles(roles);
         }
 
         usuarioRepository.save(usuario);
-        return "Usuario registrado exitosamente.";
+
+        List<Modulo> modules = usuario.getRoles().stream()
+                .flatMap(rol -> rolModuloRepository.findByRol(rol).stream())
+                .map(rolModulo -> rolModulo.getModulo())
+                .distinct()
+                .collect(Collectors.toList());
+
+        String token = jwtUtil.generateToken(usuario, modules);
+        String refreshToken = jwtUtil.generateRefreshToken(usuario);
+
+        return AuthResponseDTO.builder()
+                .token(token)
+                .refreshToken(refreshToken)
+                .build();
     }
 
-
-
-
-    
-    // ─── LOGIN ──────────────────────────────────────────────────────────────────
-
     public LoginResponseDTO login(LoginRequestDTO request) {
-
         String id = request.getIdentificador();
 
         if (id == null || id.isEmpty()) {
-        throw new RuntimeException("El identificador es obligatorio.");
+            throw new IllegalArgumentException("El identificador es obligatorio.");
         }
 
-        // 2. Buscar al usuario en la BD por cualquiera de los dos campos
-    // Intentamos por username, si no está, intentamos por email.
         Usuario usuario = usuarioRepository.findByUsername(id)
                 .or(() -> usuarioRepository.findByEmail(id))
-                .orElseThrow(() -> new RuntimeException("Credenciales inválidas o usuario no encontrado."));
-        
-        // 3. Autenticar usando el USERNAME REAL que sacamos de la base de datos
-        // Esto es clave porque AuthenticationManager necesita el username exacto
+                .orElseThrow(() -> new UsernameNotFoundException("Credenciales inválidas o usuario no encontrado."));
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(usuario.getUsername(), request.getPassword())
         );
 
-        // 3. Generar token JWT
-        String token = jwtUtil.generateToken(usuario.getUsername());
+        List<Modulo> modules = usuario.getRoles().stream()
+                .flatMap(rol -> rolModuloRepository.findByRol(rol).stream())
+                .map(rolModulo -> rolModulo.getModulo())
+                .distinct()
+                .collect(Collectors.toList());
 
-        // 4. Obtener nombres de roles
+        String token = jwtUtil.generateToken(usuario, modules);
+        String refreshToken = jwtUtil.generateRefreshToken(usuario);
+
         List<String> roles = usuario.getRoles().stream()
                 .map(Rol::getNombre)
                 .collect(Collectors.toList());
 
-        // 5. Obtener módulos accesibles (union de todos sus roles)
-        List<ModuloDTO> modulos = usuario.getRoles().stream()
-                .flatMap(rol -> rolModuloRepository.findByRol(rol).stream())
-                .map(rolModulo -> ModuloDTO.builder()
-                        .descripcion(rolModulo.getModulo().getDescripcion())
-                        .url(rolModulo.getModulo().getUrl())
+        List<ModuloDTO> modulos = modules.stream()
+                .map(mod -> ModuloDTO.builder()
+                        .descripcion(mod.getDescripcion())
+                        .url(mod.getUrl())
                         .build())
-                .distinct()
                 .collect(Collectors.toList());
-        
-        // 6. Armar nombre completo
+
         String nombreCompleto = usuario.getPersona().getNombres()
                 + " " + usuario.getPersona().getApellidoPaterno()
                 + " " + usuario.getPersona().getApellidoMaterno();
@@ -124,6 +128,35 @@ public class AuthService {
                 .roles(roles)
                 .modulos(modulos)
                 .token(token)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    public AuthResponseDTO refreshToken(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new IllegalArgumentException("El token de refresco es obligatorio.");
+        }
+
+        String username = jwtUtil.extractUsername(refreshToken);
+        Usuario usuario = usuarioRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado."));
+
+        if (!jwtUtil.isTokenValid(refreshToken) || !jwtUtil.isRefreshToken(refreshToken)) {
+        throw new BadCredentialsException("Token de refresco inválido.");
+        }
+
+        List<Modulo> modules = usuario.getRoles().stream()
+                .flatMap(rol -> rolModuloRepository.findByRol(rol).stream())
+                .map(rolModulo -> rolModulo.getModulo())
+                .distinct()
+                .collect(Collectors.toList());
+
+        String newToken = jwtUtil.generateToken(usuario, modules);
+        String newRefreshToken = jwtUtil.generateRefreshToken(usuario);
+
+        return AuthResponseDTO.builder()
+                .token(newToken)
+                .refreshToken(newRefreshToken)
                 .build();
     }
 }

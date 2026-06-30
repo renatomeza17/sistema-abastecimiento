@@ -13,7 +13,7 @@ public class LoginResponseDTO {
         private String username;
         private String nombreCompleto;
         private List<String> roles;
-        private List<ModuloDTO> modulos; // Las opciones del menú filtradas
+        private List<ModuloDTO> modulos;
         private String token;
-
+        private String refreshToken;
 }
