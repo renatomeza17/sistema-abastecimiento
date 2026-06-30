@@ -11,10 +11,12 @@ import com.abastecimiento.sudab.DTO.request.KardexRequestDTO;
 import com.abastecimiento.sudab.DTO.response.KardexMovimientoResponseDTO;
 import com.abastecimiento.sudab.DTO.response.KardexResponseDTO;
 import com.abastecimiento.sudab.Model.Producto;
+import com.abastecimiento.sudab.Model.compra.OrdenCompra;
 import com.abastecimiento.sudab.Model.inventario.Kardex;
 import com.abastecimiento.sudab.Model.inventario.KardexMovimiento;
 import com.abastecimiento.sudab.Repository.KardexMovimientoRepository;
 import com.abastecimiento.sudab.Repository.KardexRepository;
+import com.abastecimiento.sudab.Repository.OrdenCompraRepository;
 import com.abastecimiento.sudab.Repository.ProductoRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -28,6 +30,7 @@ public class KardexService {
     private final KardexRepository kardexRepository;
     private final KardexMovimientoRepository movimientoRepository;
     private final ProductoRepository productoRepository; 
+    private final OrdenCompraRepository ordenCompraRepository;
 
     // --- LOGICA PARA HU11: CREAR NUEVO ASIENTO (PRODUCTO NUEVO) ---
     @Transactional
@@ -132,6 +135,23 @@ public class KardexService {
     public List<Producto> obtenerProductosDisponibles() {
         return productoRepository.findProductosSinKardex();
     }
+
+
+    public List<Producto> verificarProductosFaltantesDeOrden(Long idOrden) {
+        // 1. Buscamos de forma segura la Orden de Compra asociada al Pedido Pendiente
+        OrdenCompra orden = ordenCompraRepository.findById(idOrden)
+                .orElseThrow(() -> new EntityNotFoundException("Orden de compra no encontrada con ID: " + idOrden));
+
+        // 2. Extraemos todos los productos mapeados en los detalles de esa Orden
+        return orden.getDetalles().stream()
+                .map(detalle -> detalle.getProducto())
+                // 3. Filtro Crucial: Solo se quedan los productos que NO existen en el Kárdex
+                .filter(producto -> !kardexRepository.existsByProductoIdProducto(producto.getIdProducto()))
+                .distinct() // Evitamos duplicados si el producto se repitió en las líneas de la orden
+                .collect(Collectors.toList());
+    }
+
+    
 
 
     // public List<Producto> obtenerProductos() {
